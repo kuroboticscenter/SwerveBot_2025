@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drivetrain.DriveWithJoystick;
 import frc.robot.subsystems.DriveBase;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.RangeFinder;
 
 /** Add your docs here. */
 public class RobotContainer {
@@ -20,6 +21,7 @@ public class RobotContainer {
   private final DriveBase m_swerve = new DriveBase(gyro::getRotation2d, new Pose2d());
   // private final SimDrivetrain m_simSwerve = new SimDrivetrain(new Pose2d());
   private final LEDSubsystem LEDSubsystem = new LEDSubsystem();
+  private final RangeFinder RangeFinderSubsystem = new RangeFinder();
 
     public RobotContainer(double period) {
         m_swerve.setDefaultCommand(new DriveWithJoystick(m_swerve, m_controller, period));
