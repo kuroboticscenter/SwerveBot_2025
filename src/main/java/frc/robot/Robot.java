@@ -4,35 +4,27 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.drivetrain.DriveWithJoystick;
-
-import com.ctre.phoenix6.hardware.Pigeon2;
 
 public class Robot extends TimedRobot {
-  private final CommandXboxController m_controller = new CommandXboxController(0);
-  Pigeon2 gyro = new Pigeon2(53, "rio");
-  
-  private final Drivetrain m_swerve = new Drivetrain(gyro::getRotation2d, new Pose2d());
-  // private final SimDrivetrain m_simSwerve = new SimDrivetrain(new Pose2d());
+  private final RobotContainer m_robotContainer;
 
-public Robot() {
-  m_swerve.setDefaultCommand(new DriveWithJoystick(m_swerve, m_controller, getPeriod()));
-}
+  public Robot() {
+    m_robotContainer = new RobotContainer(getPeriod());
+    
+  }
 
   @Override
   public void robotPeriodic() {
-      // This runs in all robot modes (disabled, auto, teleop, test)
-      CommandScheduler.getInstance().run();
-      // m_swerve.periodic();
+    // This runs in all robot modes (disabled, auto, teleop, test)
+    CommandScheduler.getInstance().run();
+    // m_swerve.periodic();
   }
 
   @Override
   public void autonomousPeriodic() {
-    m_swerve.updateOdometry();
+    // m_swerve.updateOdometry();
   }
 
   @Override
@@ -41,7 +33,5 @@ public Robot() {
 
   @Override
   public void teleopPeriodic() {
-    // new DriveWithJoystick(m_swerve, m_controller, getPeriod());
-    // driveWithJoystick(true);
   }
 }

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import com.thethriftybot.ThriftyNova;
 import com.thethriftybot.ThriftyNova.ExternalEncoder;
@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.generated.SwerveConstants;
 import frc.robot.generated.SwerveConstants.ModuleConstants;
 
-public class SwerveModule {
+public class SwerveMod {
     // Motors
     private final ThriftyNova m_driveMotor;
     private final ThriftyNova m_azimuthMotor;
@@ -43,7 +43,7 @@ public class SwerveModule {
     private static final double DRIVE_MOTOR_ROTATIONS_TO_METERS = 
         (1.0 / SwerveConstants.DRIVE_GEAR_RATIO) * (SwerveConstants.WHEEL_DIAMETER_METERS * Math.PI);
 
-    public SwerveModule(int driveMotorId, int azimuthMotorId, int encoderPort, 
+    public SwerveMod(int driveMotorId, int azimuthMotorId, int encoderPort, 
                        double encoderTicksPerRevolution, double encoderOffsetTicks, String moduleName) {
         
         m_moduleName = moduleName;

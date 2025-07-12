@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,14 +19,14 @@ import frc.robot.generated.SwerveConstants.ModuleConstants;
 import java.util.function.Supplier;
 
 /** Represents a swerve drive style drivetrain. */
-public class Drivetrain extends SubsystemBase {
+public class DriveBase extends SubsystemBase {
     public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
     // Created in Constructor to dynamically load constants
-    private final SwerveModule m_frontLeft;
-    private final SwerveModule m_frontRight;
-    private final SwerveModule m_backLeft;
-    private final SwerveModule m_backRight;
+    private final SwerveMod m_frontLeft;
+    private final SwerveMod m_frontRight;
+    private final SwerveMod m_backLeft;
+    private final SwerveMod m_backRight;
     private final Supplier<Rotation2d> m_gyroSupplier;
 
     private final SwerveDriveKinematics m_kinematics =
@@ -42,8 +42,8 @@ public class Drivetrain extends SubsystemBase {
      * @param gyroSupplier A lambda or method reference that returns current heading as Rotation2d
      * @param initialPose The initial pose of the robot
      */
-    public Drivetrain(Supplier<Rotation2d> gyroSupplier, Pose2d initialPose) {
-        m_frontLeft = new SwerveModule(
+    public DriveBase(Supplier<Rotation2d> gyroSupplier, Pose2d initialPose) {
+        m_frontLeft = new SwerveMod(
             ModuleConstants.FRONT_LEFT_DRIVE_MOTOR_ID, 
             ModuleConstants.FRONT_LEFT_AZIMUTH_MOTOR_ID, 
             0, 1, 
@@ -51,7 +51,7 @@ public class Drivetrain extends SubsystemBase {
             ModuleConstants.getFrontLeftEncoderOffset(), 
             "Front Left");
             
-        m_frontRight = new SwerveModule(
+        m_frontRight = new SwerveMod(
             ModuleConstants.FRONT_RIGHT_DRIVE_MOTOR_ID, 
             ModuleConstants.FRONT_RIGHT_AZIMUTH_MOTOR_ID, 
             1, 1, 
@@ -59,7 +59,7 @@ public class Drivetrain extends SubsystemBase {
             ModuleConstants.getFrontRightEncoderOffset(), 
             "Front Right");
             
-        m_backLeft = new SwerveModule(
+        m_backLeft = new SwerveMod(
             ModuleConstants.BACK_LEFT_DRIVE_MOTOR_ID, 
             ModuleConstants.BACK_LEFT_AZIMUTH_MOTOR_ID, 
             2, 1, 
@@ -67,7 +67,7 @@ public class Drivetrain extends SubsystemBase {
             ModuleConstants.getBackLeftEncoderOffset(), 
             "Back Left");
             
-        m_backRight = new SwerveModule(
+        m_backRight = new SwerveMod(
             ModuleConstants.BACK_RIGHT_DRIVE_MOTOR_ID, 
             ModuleConstants.BACK_RIGHT_AZIMUTH_MOTOR_ID, 
             3, 1, 
@@ -179,9 +179,7 @@ public class Drivetrain extends SubsystemBase {
             m_backRight.getSwerveState());
     }
 
-    /**
-     * Should be called periodically to update odometry and SmartDashboard
-     */
+    @Override
     public void periodic() {
         // Update odometry
         updateOdometry();
