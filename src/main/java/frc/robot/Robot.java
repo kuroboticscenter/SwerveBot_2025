@@ -4,13 +4,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.generated.SwerveConstants;
+import frc.robot.commands.drivetrain.DriveWithJoystick;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
@@ -21,51 +19,29 @@ public class Robot extends TimedRobot {
   private final Drivetrain m_swerve = new Drivetrain(gyro::getRotation2d, new Pose2d());
   // private final SimDrivetrain m_simSwerve = new SimDrivetrain(new Pose2d());
 
-  // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
-  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(20);
-  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(20);
-  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(20);
+public Robot() {
+  m_swerve.setDefaultCommand(new DriveWithJoystick(m_swerve, m_controller, getPeriod()));
+}
 
   @Override
   public void robotPeriodic() {
       // This runs in all robot modes (disabled, auto, teleop, test)
-      m_swerve.periodic();
+      CommandScheduler.getInstance().run();
+      // m_swerve.periodic();
   }
 
   @Override
   public void autonomousPeriodic() {
-    driveWithJoystick(false);
     m_swerve.updateOdometry();
   }
 
   @Override
-  public void teleopPeriodic() {
-    driveWithJoystick(true);
+  public void teleopInit() {
   }
 
-  private void driveWithJoystick(boolean fieldRelative) {
-    // Get the x speed. We are inverting this because Xbox controllers return
-    // negative values when we push forward.
-    final var xSpeed =
-        -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.05))
-          * SwerveConstants.TOP_SPEED_METERS_PER_SEC;
-
-    // Get the y speed or sideways/strafe speed. We are inverting this because
-    // we want a positive value when we pull to the left. Xbox controllers
-    // return positive values when you pull to the right by default.
-    final var ySpeed =
-      -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.05))
-        * SwerveConstants.TOP_SPEED_METERS_PER_SEC;
-
-    // Get the rate of angular rotation. We are inverting this because we want a
-    // positive value when we pull to the left (remember, CCW is positive in
-    // mathematics). Xbox controllers return positive values when you pull to
-    // the right by default.
-    final var rot = 
-      -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.05))
-        * (SwerveConstants.TOP_SPEED_METERS_PER_SEC / 2);
-
-    m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
-    // m_simSwerve.drive(xSpeed, ySpeed, rot, fieldRelative, getPeriod());
+  @Override
+  public void teleopPeriodic() {
+    // new DriveWithJoystick(m_swerve, m_controller, getPeriod());
+    // driveWithJoystick(true);
   }
 }
