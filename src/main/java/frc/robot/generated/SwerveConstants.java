@@ -87,16 +87,16 @@ public final class SwerveConstants {
                     offset = 0.2272;
                     break;
 
-                case "23FD1A9":
-                    offset = 0.0;
+                case "023FD1A9":
+                    offset = 0.1713;
                     break;
 
-                case "23FD17D":
-                    offset = 0.0;
+                case "023FD17D":
+                    offset = 0.9875;
                     break;
 
-                case "32FD18":
-                    offset = 0.0;
+                case "023FD18B":
+                    offset = 0.7242;
                     break;
 
                 default:
@@ -113,16 +113,16 @@ public final class SwerveConstants {
                     offset = 0.0215;
                     break;
 
-                case "23FD1A9":
-                    offset = 0.0;
+                case "023FD1A9":
+                    offset = 0.2269;
                     break;
 
-                case "23FD17D":
-                    offset = 0.0;
+                case "023FD17D":
+                    offset = 0.5029;
                     break;
 
-                case "32FD18":
-                    offset = 0.0;
+                case "023FD18B":
+                    offset = 0.2082;
                     break;
 
                 default:
@@ -139,16 +139,16 @@ public final class SwerveConstants {
                     offset = 0.5338;
                     break;
 
-                case "23FD1A9":
-                    offset = 0.0;
+                case "023FD1A9":
+                    offset = 0.2099;
                     break;
 
-                case "23FD17D":
-                    offset = 0.0;
+                case "023FD17D":
+                    offset = 0.3573;
                     break;
 
-                case "32FD18":
-                    offset = 0.0;
+                case "023FD18B":
+                    offset = 0.8807;
                     break;
 
                 default:
@@ -165,16 +165,16 @@ public final class SwerveConstants {
                     offset = 0.0997;
                     break;
 
-                case "23FD1A9":
-                    offset = 0.0;
+                case "023FD1A9":
+                    offset = 0.7904;
                     break;
 
-                case "23FD17D":
-                    offset = 0.0;
+                case "023FD17D":
+                    offset = 0.5140;
                     break;
 
-                case "32FD18":
-                    offset = 0.0;
+                case "023FD18B":
+                    offset = 0.6292;
                     break;
 
                 default:
