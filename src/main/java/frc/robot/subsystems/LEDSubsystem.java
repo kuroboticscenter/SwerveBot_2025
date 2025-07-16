@@ -5,11 +5,13 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.LEDConfigs;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.SolidColor;
 import com.ctre.phoenix6.controls.StrobeAnimation;
 import com.ctre.phoenix6.hardware.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.util.Color;
 
@@ -38,6 +40,19 @@ public class LEDSubsystem extends SubsystemBase {
     LED1.setControl(new SolidColor(0, 7).withColor(black));
     LED2.setControl(new SolidColor(0, 7).withColor(black));
 
+  }
+
+  private void setLEDs(ControlRequest control) {
+    LED1.setControl(control);
+    LED2.setControl(control);
+  }
+
+  public Command setLEDDisabled() {
+    return this.runOnce(() -> setLEDs(rslDisabled));
+  }
+
+  public Command setLEDEnabled() {
+    return this.runOnce(() -> setLEDs(rslEnabled));
   }
 
   @Override
