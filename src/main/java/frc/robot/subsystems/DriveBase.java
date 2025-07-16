@@ -11,12 +11,18 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generated.SwerveConstants;
 import frc.robot.generated.SwerveConstants.ModuleConstants;
 
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 /** Represents a swerve drive style drivetrain. */
 public class DriveBase extends SubsystemBase {
@@ -31,62 +37,107 @@ public class DriveBase extends SubsystemBase {
 
     private final SwerveDriveKinematics m_kinematics =
         new SwerveDriveKinematics(
-            SwerveConstants.FRONT_LEFT_LOCATION, SwerveConstants.FRONT_RIGHT_LOCATION, 
+            SwerveConstants.FRONT_LEFT_LOCATION, SwerveConstants.FRONT_RIGHT_LOCATION,
             SwerveConstants.BACK_LEFT_LOCATION, SwerveConstants.BACK_RIGHT_LOCATION);
 
     private final SwerveDriveOdometry m_odometry;
 
     /**
-     * Constructs the Drivetrain with a supplier that returns the current robot heading.
+     * Constructs the Drivetrain with a supplier that returns the current robot
+     * heading.
      *
-     * @param gyroSupplier A lambda or method reference that returns current heading as Rotation2d
-     * @param initialPose The initial pose of the robot
+     * @param gyroSupplier A lambda or method reference that returns current heading
+     *                     as Rotation2d
+     * @param initialPose  The initial pose of the robot
      */
     public DriveBase(Supplier<Rotation2d> gyroSupplier, Pose2d initialPose) {
         m_frontLeft = new SwerveMod(
-            ModuleConstants.FRONT_LEFT_DRIVE_MOTOR_ID, 
-            ModuleConstants.FRONT_LEFT_AZIMUTH_MOTOR_ID, 
-            0, 1, 
-            // ModuleConstants.FRONT_LEFT_ENCODER_OFFSET,
-            ModuleConstants.getFrontLeftEncoderOffset(), 
-            "Front Left");
-            
+                ModuleConstants.FRONT_LEFT_DRIVE_MOTOR_ID,
+                ModuleConstants.FRONT_LEFT_AZIMUTH_MOTOR_ID,
+                0, 1,
+                // ModuleConstants.FRONT_LEFT_ENCODER_OFFSET,
+                ModuleConstants.getFrontLeftEncoderOffset(),
+                "Front Left");
+
         m_frontRight = new SwerveMod(
-            ModuleConstants.FRONT_RIGHT_DRIVE_MOTOR_ID, 
-            ModuleConstants.FRONT_RIGHT_AZIMUTH_MOTOR_ID, 
-            1, 1, 
-            // ModuleConstants.FRONT_RIGHT_ENCODER_OFFSET,
-            ModuleConstants.getFrontRightEncoderOffset(), 
-            "Front Right");
-            
+                ModuleConstants.FRONT_RIGHT_DRIVE_MOTOR_ID,
+                ModuleConstants.FRONT_RIGHT_AZIMUTH_MOTOR_ID,
+                1, 1,
+                // ModuleConstants.FRONT_RIGHT_ENCODER_OFFSET,
+                ModuleConstants.getFrontRightEncoderOffset(),
+                "Front Right");
+
         m_backLeft = new SwerveMod(
-            ModuleConstants.BACK_LEFT_DRIVE_MOTOR_ID, 
-            ModuleConstants.BACK_LEFT_AZIMUTH_MOTOR_ID, 
-            2, 1, 
-            // ModuleConstants.BACK_LEFT_ENCODER_OFFSET,
-            ModuleConstants.getBackLeftEncoderOffset(), 
-            "Back Left");
-            
+                ModuleConstants.BACK_LEFT_DRIVE_MOTOR_ID,
+                ModuleConstants.BACK_LEFT_AZIMUTH_MOTOR_ID,
+                2, 1,
+                // ModuleConstants.BACK_LEFT_ENCODER_OFFSET,
+                ModuleConstants.getBackLeftEncoderOffset(),
+                "Back Left");
+
         m_backRight = new SwerveMod(
-            ModuleConstants.BACK_RIGHT_DRIVE_MOTOR_ID, 
-            ModuleConstants.BACK_RIGHT_AZIMUTH_MOTOR_ID, 
-            3, 1, 
-            // ModuleConstants.BACK_RIGHT_ENCODER_OFFSET,
-            ModuleConstants.getBackRightEncoderOffset(), 
-            "Back Right");
-        
-            this.m_gyroSupplier = gyroSupplier;
-    
+                ModuleConstants.BACK_RIGHT_DRIVE_MOTOR_ID,
+                ModuleConstants.BACK_RIGHT_AZIMUTH_MOTOR_ID,
+                3, 1,
+                // ModuleConstants.BACK_RIGHT_ENCODER_OFFSET,
+                ModuleConstants.getBackRightEncoderOffset(),
+                "Back Right");
+
+        this.m_gyroSupplier = gyroSupplier;
+
         m_odometry = new SwerveDriveOdometry(
-            m_kinematics,
-            m_gyroSupplier.get(),
-            new SwerveModulePosition[] {
-                m_frontLeft.getSwervePosition(),
-                m_frontRight.getSwervePosition(),
-                m_backLeft.getSwervePosition(),
-                m_backRight.getSwervePosition()
-            },
-            initialPose);
+                m_kinematics,
+                m_gyroSupplier.get(),
+                new SwerveModulePosition[] {
+                        m_frontLeft.getSwervePosition(),
+                        m_frontRight.getSwervePosition(),
+                        m_backLeft.getSwervePosition(),
+                        m_backRight.getSwervePosition()
+                },
+                initialPose);
+
+        // Load the RobotConfig from the GUI settings. You should probably
+        // store this in your Constants file
+        RobotConfig config;
+        try {
+            config = RobotConfig.fromGUISettings();
+
+            // Configure AutoBuilder last
+            AutoBuilder.configure(
+                    this::getPose, // Robot pose supplier
+                    this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+                    this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+                    (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given
+                                                                          // ROBOT
+                                                                          // RELATIVE ChassisSpeeds. Also optionally
+                                                                          // outputs
+                                                                          // individual module feedforwards
+                    new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller
+                                                    // for
+                                                    // holonomic drive trains
+                            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+                    ),
+                    config, // The robot configuration
+                    () -> {
+                        // Boolean supplier that controls when the path will be mirrored for the red
+                        // alliance
+                        // This will flip the path being followed to the red side of the field.
+                        // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+                        var alliance = DriverStation.getAlliance();
+                        if (alliance.isPresent()) {
+                            return alliance.get() == DriverStation.Alliance.Red;
+                        }
+                        return false;
+                    },
+                    this // Reference to this subsystem to set requirements
+            );
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -100,11 +151,22 @@ public class DriveBase extends SubsystemBase {
      */
     public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, double periodSeconds) {
         ChassisSpeeds speeds = fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyroSupplier.get())
-            : new ChassisSpeeds(xSpeed, ySpeed, rot);
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyroSupplier.get())
+                : new ChassisSpeeds(xSpeed, ySpeed, rot);
 
         var swerveModuleStates = m_kinematics.toSwerveModuleStates(
-            ChassisSpeeds.discretize(speeds, periodSeconds));
+                ChassisSpeeds.discretize(speeds, periodSeconds));
+
+        // SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.TOP_SPEED_METERS_PER_SEC);
+
+        m_frontLeft.setDesiredState(swerveModuleStates[0]);
+        m_frontRight.setDesiredState(swerveModuleStates[1]);
+        m_backLeft.setDesiredState(swerveModuleStates[2]);
+        m_backRight.setDesiredState(swerveModuleStates[3]);
+    }
+
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        var swerveModuleStates = m_kinematics.toSwerveModuleStates(speeds);
 
         // SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.TOP_SPEED_METERS_PER_SEC);
 
@@ -117,13 +179,13 @@ public class DriveBase extends SubsystemBase {
     /** Updates the field relative position of the robot. */
     public void updateOdometry() {
         m_odometry.update(
-            m_gyroSupplier.get(),
-            new SwerveModulePosition[] {
-                m_frontLeft.getSwervePosition(),
-                m_frontRight.getSwervePosition(),
-                m_backLeft.getSwervePosition(),
-                m_backRight.getSwervePosition()
-            });
+                m_gyroSupplier.get(),
+                new SwerveModulePosition[] {
+                        m_frontLeft.getSwervePosition(),
+                        m_frontRight.getSwervePosition(),
+                        m_backLeft.getSwervePosition(),
+                        m_backRight.getSwervePosition()
+                });
     }
 
     /**
@@ -138,14 +200,14 @@ public class DriveBase extends SubsystemBase {
      */
     public void resetOdometry(Pose2d pose) {
         m_odometry.resetPosition(
-            m_gyroSupplier.get(),
-            new SwerveModulePosition[] {
-                m_frontLeft.getSwervePosition(),
-                m_frontRight.getSwervePosition(),
-                m_backLeft.getSwervePosition(),
-                m_backRight.getSwervePosition()
-            },
-            pose);
+                m_gyroSupplier.get(),
+                new SwerveModulePosition[] {
+                        m_frontLeft.getSwervePosition(),
+                        m_frontRight.getSwervePosition(),
+                        m_backLeft.getSwervePosition(),
+                        m_backRight.getSwervePosition()
+                },
+                pose);
     }
 
     /**
@@ -173,48 +235,48 @@ public class DriveBase extends SubsystemBase {
      */
     public ChassisSpeeds getChassisSpeeds() {
         return m_kinematics.toChassisSpeeds(
-            m_frontLeft.getSwerveState(),
-            m_frontRight.getSwerveState(),
-            m_backLeft.getSwerveState(),
-            m_backRight.getSwerveState());
+                m_frontLeft.getSwerveState(),
+                m_frontRight.getSwerveState(),
+                m_backLeft.getSwerveState(),
+                m_backRight.getSwerveState());
     }
 
     @Override
     public void periodic() {
         // Update odometry
         updateOdometry();
-        
+
         // Update module calibration info on SmartDashboard (no parameters needed)
         m_frontLeft.updateSmartDashboard();
         m_frontRight.updateSmartDashboard();
         m_backLeft.updateSmartDashboard();
         m_backRight.updateSmartDashboard();
-        
+
         // Robot pose information
         Pose2d currentPose = getPose();
         SmartDashboard.putNumber("Robot X (m)", currentPose.getX());
         SmartDashboard.putNumber("Robot Y (m)", currentPose.getY());
         SmartDashboard.putNumber("Robot Rotation (deg)", currentPose.getRotation().getDegrees());
-        
+
         // Gyro information
         SmartDashboard.putNumber("Gyro Angle (deg)", m_gyroSupplier.get().getDegrees());
-        
+
         // Current chassis speeds
         ChassisSpeeds speeds = getChassisSpeeds();
         SmartDashboard.putNumber("Chassis X Speed (m/s)", speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("Chassis Y Speed (m/s)", speeds.vyMetersPerSecond);
         SmartDashboard.putNumber("Chassis Angular Speed (rad/s)", speeds.omegaRadiansPerSecond);
-        
+
         // Module states for debugging
         // SmartDashboard.putNumber("FL Speed (m/s)", m_frontLeft.getSwerveState().speedMetersPerSecond);
         // SmartDashboard.putNumber("FL Angle (deg)", m_frontLeft.getSwerveState().angle.getDegrees());
-        
+
         // SmartDashboard.putNumber("FR Speed (m/s)", m_frontRight.getSwerveState().speedMetersPerSecond);
         // SmartDashboard.putNumber("FR Angle (deg)", m_frontRight.getSwerveState().angle.getDegrees());
-        
+
         // SmartDashboard.putNumber("BL Speed (m/s)", m_backLeft.getSwerveState().speedMetersPerSecond);
         // SmartDashboard.putNumber("BL Angle (deg)", m_backLeft.getSwerveState().angle.getDegrees());
-        
+
         // SmartDashboard.putNumber("BR Speed (m/s)", m_backRight.getSwerveState().speedMetersPerSecond);
         // SmartDashboard.putNumber("BR Angle (deg)", m_backRight.getSwerveState().angle.getDegrees());
 

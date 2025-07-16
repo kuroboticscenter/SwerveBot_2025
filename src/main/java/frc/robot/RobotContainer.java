@@ -5,8 +5,12 @@
 package frc.robot;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.drivetrain.DriveWithJoystick;
 import frc.robot.subsystems.DriveBase;
@@ -23,7 +27,19 @@ public class RobotContainer {
   private final LEDSubsystem LEDSubsystem = new LEDSubsystem();
   private final RangeFinder RangeFinderSubsystem = new RangeFinder();
 
-    public RobotContainer(double period) {
-        m_swerve.setDefaultCommand(new DriveWithJoystick(m_swerve, m_controller, period));
-    }
+  private final SendableChooser<Command> autoChooser;
+
+  public RobotContainer(double period) {
+    m_swerve.setDefaultCommand(new DriveWithJoystick(m_swerve, m_controller, period));
+
+    // Build an auto chooser. This will use Commands.none() as the default option.
+    autoChooser = AutoBuilder.buildAutoChooser();
+
+    SmartDashboard.putData("Auto Chooser", autoChooser);
+
+  }
+
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
+  }
 }

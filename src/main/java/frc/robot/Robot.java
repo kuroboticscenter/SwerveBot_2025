@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 
 public class Robot extends TimedRobot {
   private final RobotContainer m_robotContainer;
@@ -20,6 +21,11 @@ public class Robot extends TimedRobot {
     // This runs in all robot modes (disabled, auto, teleop, test)
     CommandScheduler.getInstance().run();
     // m_swerve.periodic();
+  }
+
+  @Override
+  public void autonomousInit () {
+    m_robotContainer.getAutonomousCommand().schedule();
   }
 
   @Override
